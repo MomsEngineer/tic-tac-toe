@@ -5,6 +5,12 @@ import (
 	"os"
 	"bufio"
 	"os/exec"
+	"errors"
+)
+
+const (
+	invalidCoordsErrMsg = "There is not a cell with these coordinats."
+	busyCoordsErrMsg    = "The cell with these coordinats is busy."
 )
 
 const size = 3
@@ -15,31 +21,10 @@ const (
 	circle
 )
 
-const (
-	InvalidCoordinates = iota + 1
-	BusyCell
-)
-
-type StatusErr struct {
-	Status int
-	Message string
-}
-
-func (se StatusErr) Error() string {
-	return se.Message
-}
-
-func fscanln(b *bufio.Reader, a ...interface{}) error {
-	b.Discard(b.Buffered())
-	_, err := fmt.Fscanln(b, a...)
-	return err
-}
-
 type gameState struct {
 	board [size][size]int
 	player int
 }
-
 
 func (state *gameState) congratulate(winner int) {
 	cleanScreen()
@@ -108,17 +93,11 @@ func (state *gameState) printBoard() {
 
 func (state *gameState) checkCoordinates(x, y int) error {
 	if x < 1 || x > size || y < 1 || y > size {
-		return StatusErr{
-			Status: InvalidCoordinates,
-			Message: fmt.Sprintf("There is not a cell with the coordinats x = %v, y = %v.", x, y),
-		}
+		return errors.New(invalidCoordsErrMsg)
 	}
 
 	if state.board[x - 1][y - 1] != none {
-		return StatusErr{
-			Status: BusyCell,
-			Message: fmt.Sprintf("The cell with the coordinats x = %v, y = %v is busy.", x, y),
-		}
+		return errors.New(busyCoordsErrMsg)
 	}
 
 	return nil
@@ -189,8 +168,8 @@ func (state *gameState) checkWinner() int {
 }
 
 func (state *gameState) haveFreeCell() bool {
-	for row := range state.board {
-		for cell := range row {
+	for _, row := range state.board {
+		for _, cell := range row {
 			if cell == none {
 				return true
 			}
@@ -236,10 +215,29 @@ const congratulation = `
 ----------------------------------------------------------------------------------------------------
 `
 
+const menu = `
+						     Menu
+						   1. Play
+						   2. Exit
+Select the menu item: `
+
+func fscanln(b *bufio.Reader, y, x *int) error {
+	b.Discard(b.Buffered())
+	_, err := fmt.Fscanln(b, y, x)
+	return err
+}
+
 func cleanScreen() {
 	cmd := exec.Command("cmd", "/c", "cls")
 	cmd.Stdout = os.Stdout
 	cmd.Run()
+}
+
+func printMenu() {
+	cleanScreen()
+	fmt.Print(greeting)
+	fmt.Print(rules)
+	fmt.Print(menu)
 }
 
 func play() {
@@ -250,12 +248,20 @@ func play() {
 	stdin := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("Enter y and x coordinates by space, please: ")
-		if err := fscanln(stdin, &x, &y); err != nil {
-			fmt.Println("Use digits, please.")
+		if err := fscanln(stdin, &y, &x); err != nil {
+			if err.Error() == "unexpected newline" {
+				fmt.Println("Not enough arguments")
+			} else if err.Error() == "expected newline" {
+				fmt.Println("Too many arguments")
+			} else if err.Error() == "expected integer" {
+				fmt.Println("Use digits, please")
+			} else {
+				fmt.Println(err)
+			}
 			continue
 		}
 
-		if err := state.setMark(x, y); err != nil {
+		if err := state.setMark(y, x); err != nil {
 			fmt.Println(err.Error())
 			continue
 		}
@@ -275,21 +281,9 @@ func play() {
 	state.congratulate(winner)
 }
 
-const menu = `
-						     Menu
-						   1. Play
-						   2. Exit
-Select the menu item: `
-
-func printMenu() {
-	cleanScreen()
-	fmt.Print(greeting)
-	fmt.Print(rules)
-	fmt.Print(menu)
-}
-
 func main() {
 	printMenu()
+
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		switch scanner.Text() {
