@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"reflect"
-	"bufio"
 )
 
 func Test_checkCoordinates(t *testing.T) {
@@ -26,10 +25,10 @@ func Test_checkCoordinates(t *testing.T) {
 		x int
 		expected error
 	} {
-		{"Zero coords",      0,  0, errors.New(invalidCoordsErrMsg)},
-		{"Negative coords", -1, -1, errors.New(invalidCoordsErrMsg)},
-		{"Too big coords",   5,  5, errors.New(invalidCoordsErrMsg)},
-		{"Busy cell",        2,  2, errors.New(busyCoordsErrMsg)},
+		{"Zero coords",      0,  0, errors.New(msg.err.invalidCoords)},
+		{"Negative coords", -1, -1, errors.New(msg.err.invalidCoords)},
+		{"Too big coords",   5,  5, errors.New(msg.err.invalidCoords)},
+		{"Busy cell",        2,  2, errors.New(msg.err.busyCoords)},
 	}
 
 	for _, d := range data {
@@ -54,8 +53,8 @@ func Test_setMark(t *testing.T) {
 
 	t.Run("Busy cell", func(t *testing.T) {
 		err := state.setMark(1, 1)
-		if err == nil || err.Error() != busyCoordsErrMsg {
-			t.Errorf("incorrect result: expected %v, got %v", busyCoordsErrMsg, err)
+		if err == nil || err.Error() != msg.err.busyCoords {
+			t.Errorf("incorrect result: expected %v, got %v", msg.err.busyCoords, err)
 		}
 	})
 }
@@ -235,7 +234,7 @@ func getDataFromConsole(print func()) []byte {
 	os.Stdout = old
 
 	out, _ := io.ReadAll(r)
-	return out[1:]
+	return out
 }
 
 func Test_printBoard(t *testing.T) {
@@ -271,15 +270,17 @@ func Test_congratulate(t *testing.T) {
 		},
 	}
 
+	InitializeData("eng")
+
 	result := getDataFromConsole(func () {state.congratulate(1)})
 
 	tmp := `				 X |   | O 
 				-----------
-				   | X |   	The crosses won!
+				   | X |   	Crosses won!
 				-----------
 				 O | O | X 	Press 'Enter', please.
 	`
-	expected := []byte(congratulation + tmp[:len(tmp)-1])
+	expected := []byte(tmp[:len(tmp)-1])
 
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("incorrect result: expected %v, got %v", expected, result)

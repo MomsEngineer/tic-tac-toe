@@ -7,52 +7,84 @@ import (
 	"os/exec"
 )
 
-const greeting = `
-----------------------------------------------------------------------------------------------------
-     _______  _____   _____          _______             _____          _______   ____   ______
-    |__   __||_   _| / ____|        |__   __|    /\     / ____|        |__   __| / __ \ |  ____|
-       | |     | |  | |      ______    | |      /  \   | |      ______    | |   | |  | || |__
-       | |     | |  | |     |______|   | |     / /\ \  | |     |______|   | |   | |  | ||  __|
-       | |    _| |_ | |____            | |    / ____ \ | |____            | |   | |__| || |____
-       |_|   |_____| \_____|           |_|   /_/    \_\ \_____|           |_|    \____/ |______|
 
-----------------------------------------------------------------------------------------------------
-`
+type basicMessages struct {
+	greeting string
+	rules string
+	congratulation string
+	menu string
+	inputPrompt string
+	pressEnter string
+	winMsg string
+	сrosses string
+	circles string
+}
 
-const rules = `
-Use y and x coordinates for the game. y and x are vertical and horizontal coordinates, respectively.
-Cell coordinates:			           Example:
-                			Enter y and x, please: 1 1
-   1 1|1 2|1 3  			   |   |               X |   |   
-   -----------  			-----------           -----------
-   2 1|2 2|2 3  			   |   |       ===>      |   |   
-   -----------  			-----------           -----------
-   3 1|2 3|3 3  			   |   |                 |   |
+type errorMessages struct {
+	invalidCoords string
+	busyCoords string
+	noEnoughArgs string
+	tooManyArgs string
+	useDigits string
+}
 
-----------------------------------------------------------------------------------------------------
-`
+type messages struct {
+	basic basicMessages
+	err errorMessages
+}
 
-const congratulation = `
-----------------------------------------------------------------------------------------------------
-   ____   ___   _   _   ____  ____      _     _____  _   _  _        _    _____  ___   ___   _   _ 
-  / ___| / _ \ | \ | | / ___||  _ \    / \   |_   _|| | | || |      / \  |_   _||_ _| / _ \ | \ | |
-  | |    | | | |   | || |  _ | |_) |  / _ \    | |  | | | || |     / _ \   | |   | | | | | ||  \| |
-  | |___ | | | | |\  || |_| ||  _ <  / ___ \   | |  | |_| || |__  / ___ \  | |   | | | |_| || |\  |
-  \____| \___/ |_| \_| \____||_| \_\/_/   \_\  |_|   \___/ |____|/_/   \_\ |_|  |___| \___/ |_| \_|
-
-----------------------------------------------------------------------------------------------------
-`
-
-const menu = `
-						     Menu
-						   1. Play
-						   2. Exit
-Select the menu item: `
+var msg messages
 
 func fscanln(b *bufio.Reader, y, x *int) error {
 	b.Discard(b.Buffered())
 	_, err := fmt.Fscanln(b, y, x)
 	return err
+}
+
+func InitializeData(lang string) {
+	if lang == "rus" {
+		msg = messages {
+			basic: basicMessages {
+				greeting: greeting_rus,
+				rules: rules_rus,
+				congratulation: congratulation_rus,
+				menu: menu_rus,
+				inputPrompt: inputPrompt_rus,
+				pressEnter: pressEnter_rus,
+				winMsg: winMsg_rus,
+				сrosses: сrosses_rus,
+				circles: circles_rus,
+			},
+			err: errorMessages {
+				invalidCoords: invalidCoords_rus,
+				busyCoords: busyCoords_rus,
+				noEnoughArgs: noEnoughArgs_rus,
+				tooManyArgs: tooManyArgs_rus,
+				useDigits: useDigits_rus,
+			},
+		}
+	} else {
+		msg = messages {
+			basic: basicMessages {
+				greeting: greeting_eng,
+				rules: rules_eng,
+				congratulation: congratulation_eng,
+				menu: menu_eng,
+				inputPrompt: inputPrompt_eng,
+				pressEnter: pressEnter_eng,
+				winMsg: winMsg_eng,
+				сrosses: сrosses_eng,
+				circles: circles_eng,
+			},
+			err: errorMessages {
+				invalidCoords: invalidCoords_eng,
+				busyCoords: busyCoords_eng,
+				noEnoughArgs: noEnoughArgs_eng,
+				tooManyArgs: tooManyArgs_eng,
+				useDigits: useDigits_eng,
+			},
+		}
+	}
 }
 
 func cleanScreen() {
@@ -63,9 +95,9 @@ func cleanScreen() {
 
 func PrintMenu() {
 	cleanScreen()
-	fmt.Print(greeting)
-	fmt.Print(rules)
-	fmt.Print(menu)
+	fmt.Print(msg.basic.greeting)
+	fmt.Print(msg.basic.rules)
+	fmt.Print(msg.basic.menu)
 }
 
 func Play() {
@@ -75,14 +107,14 @@ func Play() {
 
 	stdin := bufio.NewReader(os.Stdin)
 	for {
-		fmt.Print("Enter y and x coordinates by space, please: ")
+		fmt.Print(msg.basic.inputPrompt)
 		if err := fscanln(stdin, &y, &x); err != nil {
 			if err.Error() == "unexpected newline" {
-				fmt.Println("Not enough arguments")
+				fmt.Println(msg.err.noEnoughArgs)
 			} else if err.Error() == "expected newline" {
-				fmt.Println("Too many arguments")
+				fmt.Println(msg.err.tooManyArgs)
 			} else if err.Error() == "expected integer" {
-				fmt.Println("Use digits, please")
+				fmt.Println(msg.err.useDigits)
 			} else {
 				fmt.Println(err)
 			}
@@ -108,7 +140,7 @@ func Play() {
 	}
 
 	cleanScreen()
-	fmt.Print(congratulation)
+	fmt.Print(msg.basic.congratulation)
 	state.congratulate(winner)
 }
 

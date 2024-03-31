@@ -5,11 +5,6 @@ import (
 	"errors"
 )
 
-const (
-	invalidCoordsErrMsg = "There is not a cell with these coordinats."
-	busyCoordsErrMsg    = "The cell with these coordinats is busy."
-)
-
 const size = 3
 
 const (
@@ -26,9 +21,9 @@ type gameState struct {
 func (state *gameState) congratulate(winner int) {
 	var winnerName string
 	if winner == cross {
-		winnerName = "crosses"
+		winnerName = msg.basic.сrosses
 	} else {
-		winnerName = "circles"
+		winnerName = msg.basic.circles
 	}
 
 	offset := "				"
@@ -47,7 +42,7 @@ func (state *gameState) congratulate(winner int) {
 		}
 
 		if i == 1 {
-			fmt.Printf("	The %v won!", winnerName)
+			fmt.Printf("	%v %v", winnerName, msg.basic.winMsg)
 		}
 
 		if i < size - 1 {
@@ -55,7 +50,7 @@ func (state *gameState) congratulate(winner int) {
 		}
 	}
 
-	fmt.Println("	Press 'Enter', please.")
+	fmt.Printf("	%v\n", msg.basic.pressEnter)
 	fmt.Scanln()
 }
 
@@ -85,11 +80,11 @@ func (state *gameState) printBoard() {
 
 func (state *gameState) checkCoordinates(x, y int) error {
 	if x < 1 || x > size || y < 1 || y > size {
-		return errors.New(invalidCoordsErrMsg)
+		return errors.New(msg.err.invalidCoords)
 	}
 
 	if state.board[x - 1][y - 1] != none {
-		return errors.New(busyCoordsErrMsg)
+		return errors.New(msg.err.busyCoords)
 	}
 
 	return nil
