@@ -41,18 +41,18 @@ func Test_checkCoordinates(t *testing.T) {
 	}
 }
 
-func Test_setMark(t *testing.T) {
+func Test_playerSetMark(t *testing.T) {
 	state := gameState{player: cross}
 
 	t.Run("Good case", func(t *testing.T) {
-		err := state.setMark(1, 1)
+		err := state.playerSetsMark(1, 1)
 		if err != nil {
 			t.Errorf("incorrect result: expected %v, got %v", nil, err)
 		}
 	})
 
 	t.Run("Busy cell", func(t *testing.T) {
-		err := state.setMark(1, 1)
+		err := state.playerSetsMark(1, 1)
 		if err == nil || err.Error() != msg.err.busyCoords {
 			t.Errorf("incorrect result: expected %v, got %v", msg.err.busyCoords, err)
 		}
