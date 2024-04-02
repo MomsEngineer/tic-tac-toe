@@ -7,6 +7,7 @@ import (
 	"os/exec"
 )
 
+type singleMode bool
 
 type basicMessages struct {
 	greeting string
@@ -16,6 +17,7 @@ type basicMessages struct {
 	inputPrompt string
 	pressEnter string
 	winMsg string
+	drawMsg string
 	сrosses string
 	circles string
 }
@@ -52,6 +54,7 @@ func InitializeData(lang string) {
 				inputPrompt: inputPrompt_rus,
 				pressEnter: pressEnter_rus,
 				winMsg: winMsg_rus,
+				drawMsg: drawMsg_rus,
 				сrosses: сrosses_rus,
 				circles: circles_rus,
 			},
@@ -73,6 +76,7 @@ func InitializeData(lang string) {
 				inputPrompt: inputPrompt_eng,
 				pressEnter: pressEnter_eng,
 				winMsg: winMsg_eng,
+				drawMsg: drawMsg_eng,
 				сrosses: сrosses_eng,
 				circles: circles_eng,
 			},
@@ -93,14 +97,28 @@ func cleanScreen() {
 	cmd.Run()
 }
 
-func PrintMenu() {
+func printMenu() {
 	cleanScreen()
 	fmt.Print(msg.basic.greeting)
 	fmt.Print(msg.basic.rules)
 	fmt.Print(msg.basic.menu)
 }
 
-func Play() {
+func StartGame() {
+	scanner := bufio.NewScanner(os.Stdin)
+
+	printMenu()
+	for scanner.Scan() {
+		switch scanner.Text() {
+			case "1":play(true)
+			case "2":play(false)
+			case "3": return
+		}
+		printMenu()
+	}
+}
+
+func play(single singleMode) {
 	state := gameState{player: cross}
 	var x, y int
 	winner := none
@@ -121,21 +139,28 @@ func Play() {
 			continue
 		}
 
-		if err := state.setMark(y, x); err != nil {
+		if err := state.playerSetsMark(y, x); err != nil {
 			fmt.Println(err.Error())
 			continue
 		}
 
-		state.nextTurn()
 		cleanScreen()
 		state.printBoard()
 
-		if winner = state.checkWinner(); winner != none {
+		if winner = state.checkWinner(); winner != none || !state.haveFreeCell() {
 			break
 		}
 
-		if !state.haveFreeCell() {
-			break
+		state.nextTurn()
+
+		if single {
+			state.computerSetsMark()
+			if winner = state.checkWinner(); winner != none || !state.haveFreeCell() {
+				break
+			}
+			cleanScreen()
+			state.printBoard()
+			state.nextTurn()
 		}
 	}
 

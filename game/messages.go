@@ -75,21 +75,27 @@ const congratulation_rus = `
 
 const menu_eng = `
 						     Menu
-						   1. Play
-						   2. Exit
+						   1. One player
+						   2. MTwo player
+						   3. Exit
 Select the menu item: `
 
 const menu_rus = `
 						     Меню
-						   1. Играть
-						   2. Выйти
+						   1. Один игрок
+						   2. Два игрока
+						   3. Выйти
 Выберите нужный пункт меню: `
+
 
 const inputPrompt_eng = "Enter y and x coordinates by space, please: "
 const inputPrompt_rus = "Пожалуйста, введите y и x через пробел: "
 
 const winMsg_eng = "won!"
 const winMsg_rus = "победили!"
+
+const drawMsg_eng = "A draw!"
+const drawMsg_rus = "Ничья!"
 
 const сrosses_eng = "Сrosses"
 const сrosses_rus = "Крестики"
